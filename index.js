@@ -3,6 +3,8 @@ const db = require("./config/connection")
 
 require("console.table")
 
+
+
 db.connect(() => {
     menu()
 })
@@ -29,10 +31,20 @@ function menu() {
             else if (response.menu === "add an employee") {
                 addEmployees()
             }
+            else if (response.menu === "view all roles") {
+                viewRoles()
+            }
         })
 }
 function viewDepartments() {
     db.query(`select* from department`, (err, data) => {
+        console.table(data)
+        menu()
+    })
+}
+
+function viewRoles() {
+    db.query(`select* from role`, (err, data) => {
         console.table(data)
         menu()
     })
@@ -89,7 +101,7 @@ function viewEmployees() {
     role.salary,
     CONCAT(mgr.first_name, " " , mgr.last_name) as manager
     FROM employee
-    LEFT JOIN role ON role.id= employee.rolde_id
+    LEFT JOIN role ON role.id= employee.role_id
     LEFT JOIN department ON role.department_id=department.id
     LEFT JOIN employee as mgr ON employee.manager_id = mgr.id
     `, (err, data) => {
