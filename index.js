@@ -15,23 +15,33 @@ const menuQuestions = [
         type: "list",
         name: "menu",
         message: "Choose the following option",
-        choices: ["view all departments", "view all roles", "view all employees", "add a department", "update an employee role"]
+        choices: ["view all departments", "view all roles", "view all employees", "add a department", "add a role", "add an employee", "update an employee role"]
     }
 ]
 
 function menu() {
     inquirer.prompt(menuQuestions)
         .then(response => {
-            if (response.menu === "view all employess") {
+
+            if (response.menu === "view all departments") {
+                viewDepartments()
+            }
+            else if (response.menu === "view all roles") {
+                viewRoles()
+            }
+            else if (response.menu === "view all employees") {
                 viewEmployees()
             }
-            else if (response.menu === "view all departments") {
-                viewDepartments()
+            else if (response.menu === "add a department") {
+                addDepartment()
+            }
+            else if (response.menu === "add a role") {
+                addRoles()
             }
             else if (response.menu === "add an employee") {
                 addEmployees()
             }
-            else if (response.menu === "view all roles") {
+            else if (response.menu === "update an employee role") {
                 viewRoles()
             }
         })
@@ -44,7 +54,10 @@ function viewDepartments() {
 }
 
 function viewRoles() {
-    db.query(`select* from role`, (err, data) => {
+    db.query(`
+    select role.id, title, salary, department.name from role
+    JOIN department on department_id = department.id
+    `, (err, data) => {
         console.table(data)
         menu()
     })
@@ -94,7 +107,7 @@ function viewEmployees() {
     db.query(`
     SELECT
     employee.id,
-    employee.first_name
+    employee.first_name,
     employee.last_name,
     role.title,
     department.name as department,
@@ -105,7 +118,117 @@ function viewEmployees() {
     LEFT JOIN department ON role.department_id=department.id
     LEFT JOIN employee as mgr ON employee.manager_id = mgr.id
     `, (err, data) => {
+        // console.error(err)
         console.table(data)
         menu()
     })
+}
+
+function addDepartment() {
+
+
+    const addDepartmentQuestion = [
+        {
+            type: "input",
+            name: "department_name",
+            message: "What is the name of the department?"
+
+        }
+
+    ]
+    inquirer.prompt(addDepartmentQuestion).then(response => {
+        const parameters = [response.department_name]
+        db.query("INSERT INTO department (name)VALUES(?)", parameters, (err, data) => {
+            viewDepartments()
+        })
+
+
+
+
+
+
+
+    })
+
+}
+
+function addRoles() {
+
+    db.query(`select* from department`, (err, departmentData) => {
+
+        const addRoleQuestions = [
+            {
+                type: "input",
+                name: "role_name",
+                message: "What is the name of the role?"
+
+            },
+            {
+                type: "input",
+                name: "salary",
+                message: "What is this role's salary?"
+            },
+            {
+                type: "list",
+                name: "department_name",
+                choices: departmentData
+            }
+
+
+
+        ]
+        inquirer.prompt(addRoleQuestions).then(response => {
+            const parameters = [response.role_name, response.salary, response.department_name]
+            db.query("INSERT INTO role (title, salary, department_id)VALUES(?,?,?)", parameters, (err, data) => {
+                viewDepartments()
+            })
+
+
+
+
+
+
+
+        })
+
+    })
+
+}
+
+function updateEmployeeRole() {
+
+
+    db.query(`
+    SELECT
+    employee.id,
+    CONCAT(employee.first_name, " " , employee.last_name) as fullname
+    FROM employee
+    `, (err, employeeData) => {
+        // console.error(err)
+
+        const updateRole = [
+            {
+                type: "list",
+                name: "employees",
+                message: "Which employee would you like to update?",
+                choices: employeeData.map() => {
+
+
+                 }
+
+            }
+
+        ]
+
+        inquirer.prompt(updateRole).then(response => {
+            const parameters = []
+
+        })
+        
+    })
+
+    
+
+
+    
 }
