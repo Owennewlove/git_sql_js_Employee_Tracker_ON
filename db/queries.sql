@@ -4,7 +4,7 @@ select * from department;
 select * from role;
 
 SELECT 
-employee.id
+employee.id,
 employee.first_name,
 employee.last_name,
 role.title,
